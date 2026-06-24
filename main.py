@@ -11,7 +11,7 @@ intents.members = True
 bot = discord.Client(intents=intents)
 tree = app_commands.CommandTree(bot)
 
-openai.api_key = "YOUR_OPENAI_KEY_HERE"   # ← Change this
+openai.api_key = "YOUR_OPENAI_KEY_HERE"  # ← Change this
 
 @bot.event
 async def on_ready():
@@ -21,7 +21,7 @@ async def on_ready():
         synced = await tree.sync()
         print(f"Synced {len(synced)} command(s)")
     except Exception as e:
-        print("Sync error:", e) bot.change_presence(activity=discord.Game(name="☕ Brewing recaps"))
+        print("Sync error:", e)
 
 async def get_ai_summary(chat_text, context=""):
     try:
@@ -32,7 +32,7 @@ async def get_ai_summary(chat_text, context=""):
         )
         return response.choices[0].message.content
     except:
-        return "AI summary unavailable."
+        return "AI summary unavailable right now."
 
 @tree.command(name="rewind", description="Get a summary of recent messages")
 @app_commands.describe(hours="Hours back (default 24)", user="Specific user", topic="Keyword")
