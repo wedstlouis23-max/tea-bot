@@ -34,30 +34,30 @@ async def get_ai_summary(chat_text, context=""):
     except:
         return "AI summary unavailable right now."
 
-@tree.command(name="rewind", description="Get a summary of recent messages")
-@app_commands.describe(hours="Hours back (default 24)", user="Specific user", topic="Keyword")
-async def rewind(interaction: discord.Interaction, hours: int = 24, user: discord.Member = None, topic: str = None):
+@tree.command(name="rewind", description="Summarize messages from a specific time range")
+@app_commands.describe(hours="How many hours back to summarize (default 24)")
+async def rewind(interaction: discord.Interaction, hours: int = 24):
     await interaction.response.defer()
+
     after = datetime.utcnow() - timedelta(hours=hours)
     messages = []
     async for msg in interaction.channel.history(limit=500, after=after):
-        if msg.author.bot or not msg.content.strip(): continue
-        if user and msg.author.id != user.id: continue
-        if topic and topic.lower() not in msg.content.lower(): continue
-        messages.append(f"{msg.author.display_name}: {msg.content}")
+        if not msg.author.bot and msg.content.strip():
+            messages.append(f"{msg.author.display_name}: {msg.content}")
 
     if not messages:
-        await interaction.followup.send("No matching messages found.")
+        await interaction.followup.send(f"No messages found in the last {hours} hours.")
         return
 
-    chat_text = "\n".join(messages[-150:])
-    context = f"Channel: {interaction.channel.name}"
-    if user: context += f" | User: {user.display_name}"
-    if topic: context += f" | Topic: {topic}"
+    summary = f"""**📋 Rewind Summary** (last {hours} hours)
 
-    summary = await get_ai_summary(chat_text, context)
-    embed = discord.Embed(title="📋 Rewind Summary", description=summary, color=0xFFD700)
-    embed.set_footer(text=f"Last {hours} hours • {len(messages)} messages")
+**Channel:** #{interaction.channel.name}
+**Messages:** {len(messages)}
+
+**Recent activity:**
+""" + "\n".join([f"• {m[:120]}..." for m in messages[-15:]])
+
+    embed = discord.Embed(title="Rewind Summary", description=summary, color=0xFFD700)
     await interaction.followup.send(embed=embed)
 
 if __name__ == "__main__":
