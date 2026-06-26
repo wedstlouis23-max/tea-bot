@@ -34,8 +34,8 @@ async def get_ai_summary(chat_text, context=""):
     except:
         return "AI summary unavailable right now."
 
-@tree.command(name="rewind", description="Summarize messages from a specific time range")
-@app_commands.describe(hours="How many hours back to summarize (default 24)")
+@tree.command(name="rewind", description="Detailed summary: who did what and when")
+@app_commands.describe(hours="Hours back to summarize (default 24)")
 async def rewind(interaction: discord.Interaction, hours: int = 24):
     await interaction.response.defer()
 
@@ -43,19 +43,21 @@ async def rewind(interaction: discord.Interaction, hours: int = 24):
     messages = []
     async for msg in interaction.channel.history(limit=500, after=after):
         if not msg.author.bot and msg.content.strip():
-            messages.append(f"{msg.author.display_name}: {msg.content}")
+            messages.append((msg.author.display_name, msg.content, msg.created_at))
 
     if not messages:
         await interaction.followup.send(f"No messages found in the last {hours} hours.")
         return
 
-    summary = f"""**📋 Rewind Summary** (last {hours} hours)
+    # Basic structured summary
+    summary = f"""**📋 Detailed Rewind** (last {hours} hours in #{interaction.channel.name})
 
-**Channel:** #{interaction.channel.name}
-**Messages:** {len(messages)}
+**Key Activity:**
+"""
+    for author, content, time in messages[-20:]:  # last 20 messages
+        summary += f"• **{author}** at {time.strftime('%I:%M %p')}: {content[:100]}...\n"
 
-**Recent activity:**
-""" + "\n".join([f"• {m[:120]}..." for m in messages[-15:]])
+    summary += "\n**Summary:** Recent discussion. Check full history for more details."
 
     embed = discord.Embed(title="Rewind Summary", description=summary, color=0xFFD700)
     await interaction.followup.send(embed=embed)
