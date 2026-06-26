@@ -54,13 +54,13 @@ async def rewind(interaction: discord.Interaction, hours: int = 24):
 
 **Active Members:** {', '.join(set(m[0] for m in messages[-30:]))}
 
+**What the conversation was about:** Recent discussion in the channel (check messages for full details).
+
 **Key Activity:**
 """
-    for author, content, time in messages[-20:]:  # last 20 messages with time
+    for author, content, time in messages[-20:]:
         time_str = time.strftime('%I:%M %p')
         summary += f"**{author}** at {time_str}: {content[:120]}...\n"
-
-    summary += "\n**Overall:** Check the channel for full context."
 
     embed = discord.Embed(title="Rewind Summary", description=summary, color=0xFFD700)
     await interaction.followup.send(embed=embed)
