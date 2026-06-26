@@ -49,19 +49,21 @@ async def rewind(interaction: discord.Interaction, hours: int = 24):
         await interaction.followup.send(f"No messages found in the last {hours} hours.")
         return
 
-    # Basic structured summary
-    summary = f"""**📋 Detailed Rewind** (last {hours} hours in #{interaction.channel.name})
+    # Build detailed summary
+    summary = f"""**📋 Rewind Summary** (last {hours} hours in #{interaction.channel.name})
+
+**Active Members:** {', '.join(set(m[0] for m in messages[-30:]))}
 
 **Key Activity:**
 """
-    for author, content, time in messages[-20:]:  # last 20 messages
-        summary += f"• **{author}** at {time.strftime('%I:%M %p')}: {content[:100]}...\n"
+    for author, content, time in messages[-20:]:  # last 20 messages with time
+        time_str = time.strftime('%I:%M %p')
+        summary += f"**{author}** at {time_str}: {content[:120]}...\n"
 
-    summary += "\n**Summary:** Recent discussion. Check full history for more details."
+    summary += "\n**Overall:** Check the channel for full context."
 
     embed = discord.Embed(title="Rewind Summary", description=summary, color=0xFFD700)
     await interaction.followup.send(embed=embed)
-
 if __name__ == "__main__":
     token = os.getenv("DISCORD_TOKEN")
     if not token:
